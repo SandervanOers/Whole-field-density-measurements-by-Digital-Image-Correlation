@@ -7,11 +7,7 @@ A new optical method is applied for the quantitative measurement of the density 
 
 The software performs three main steps: 1) digital image correlation (dic), 2) calibration and (3) calculation of the index of refraction. The main file is DisplayImage.cpp. 
 
-Expected usage of the software is "./DIC <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize directionsToInclude nref DICNeeded CalibrationNeeded CalculateRefractionIndex", where <Image_Path> is the path to the folder where the images are located; SplineDegree, SubsetLength and GridLength are parameters of the dic step; ShapeFunction determines the order of the shape functions with 0 = rigid, 1 = affine, 2 = mixed terms, 3 = second order terms; PropagationFunction is a flag to use a propgationfunction to transfer the solution of the dic step of one grid point to another grid point as initial conditon. OrderingImages deterimes which image is the template and which image is the deformed image in the dic step. xStart, xEnd, yStart and yEnd indicate the size of the template image. NumberOfThreads is the number of 
-	
-
-As input two images are required, between which the dic will be performed. These images must be in the format *.tif or *.csv (in a folder called Averaged).
-
+The expected usage of the software is explained in ExpectedUsage.md.
 
 Tested on: Fedora Linux
 Required Software: make, cmake, gcc, g++, openCV
