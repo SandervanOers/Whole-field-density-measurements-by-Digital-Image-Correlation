@@ -11,3 +11,5 @@ The expected usage of the software is explained in ExpectedUsage.md.
 
 Tested on: Fedora Linux
 Required Software: make, cmake, gcc, g++, openCV
+
+Installation: Download repository to folder, "cd folder", "cmake .", "make ./DIC"
