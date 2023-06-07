@@ -1,5 +1,7 @@
 Stratified Fluid:
 
+Unpack the files in the folder Averaged.
+
 Run with:
 ./DIC Examples/Stratified/ 8 41 20 3 1 1 860 1850 360 2040 8 200 1e-10 0.99 5 1 1.337 0 0 1 
 
