@@ -1,0 +1,16 @@
+usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize nref DICNeeded CalibrationNeeded CalculateRefractionIndex 
+./DIC Lyon/TuesdaySider/Rotated/2Water8Strat/ 8 41 5 3 1 1 860 1850 360 2040 8 200 1e-10 0.9 5 1.337 1 0 0 
+usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize nref DICNeeded CalibrationNeeded CalculateRefractionIndex 
+./DIC Lyon/TuesdaySider/Rotated/2Water8Strat/ 8 41 5 3 1 1 860 1850 360 2040 8 200 1e-10 0.9 5 1.337 1 0 0 
+usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize nref DICNeeded CalibrationNeeded CalculateRefractionIndex 
+./DIC Lyon/TuesdaySider/Rotated/2Water8Strat/ 8 41 5 3 1 1 860 1850 360 2040 8 200 1e-10 0.9 5 1.337 1 0 0 
+usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize nref DICNeeded CalibrationNeeded CalculateRefractionIndex 
+./DIC Lyon/TuesdaySider/Rotated/2Water8Strat/ 8 41 5 3 1 1 860 1850 360 2040 8 200 1e-10 0.9 5 1.337 0 0 1 
+usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize directionsToInclude nref DICNeeded CalibrationNeeded CalculateRefractionIndex 
+./DIC Examples/Stratified/ 8 41 5 3 1 1 860 1850 360 2040 8 200 1e-10 0.99 5 1 1.337 0 0 1 
+usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize directionsToInclude nref DICNeeded CalibrationNeeded CalculateRefractionIndex 
+./DIC Examples/Stratified/ 8 41 20 3 1 1 860 1850 360 2040 8 200 1e-10 0.99 5 1 1 0 1 1 
+usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize directionsToInclude nref DICNeeded CalibrationNeeded CalculateRefractionIndex 
+./DIC Examples/Stratified/ 8 41 20 3 1 1 860 1850 360 2040 8 200 1e-10 0.99 5 1 1 0 0 1 
+usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize directionsToInclude nref DICNeeded CalibrationNeeded CalculateRefractionIndex 
+./DIC Examples/Stratified/ 8 41 20 3 1 1 860 1850 360 2040 8 200 1e-10 0.99 5 1 1.337 0 0 1 
