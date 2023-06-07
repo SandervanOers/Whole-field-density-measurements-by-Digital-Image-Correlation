@@ -36,9 +36,7 @@ std::vector<double> calculatePixelTranslationRandom_SinglePoint(const cv::Mat &R
 		double minVal; double maxVal;
 		cv::Point minLoc; cv::Point maxLoc;
 		cv::Point matchLoc;
-		std::cout << "here" << std::endl;
 		cv::matchTemplate(Deformed2, temp, result, cv::TM_CCOEFF_NORMED );  //CV_TM_CCOEFF_NORMED
-		std::cout << "here 1s" << std::endl;
 		// Localizing the best match with minMaxLoc
 		cv::minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, cv::Mat() );
 		matchLoc = maxLoc;
