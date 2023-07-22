@@ -37,6 +37,12 @@ int main(int argc, char** argv )
 	cv::Mat CC = load_matrix(inputvariables.path, "CorrelationCoefficient", 1);
 	std::cout << std::endl << "\033[1;32mLoading Matrices Completed\033[0m\n" << std::endl;
 	/*--------------------------------------------------------------------------*/
+	if (inputvariables.orderingdisplacements==1)
+	{
+		DX = - DX;
+		DY = - DY;
+	}
+	/*--------------------------------------------------------------------------*/
 	auto tr3= std::chrono::high_resolution_clock::now();
 	ExperimentalSetupVariables experimentalsetupvariables;
 	// Camera

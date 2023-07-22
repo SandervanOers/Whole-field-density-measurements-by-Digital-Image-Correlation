@@ -3,8 +3,8 @@
 /*--------------------------------------------------------------------------*/
 extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvariables)
 {
-	unsigned int NumberOfInputArguments = 23;
-	std::string commandline = "usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction ReliabilityGuidedDIC PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize directionsToInclude nref DICNeeded CalibrationNeeded CalculateRefractionIndex \n";
+	unsigned int NumberOfInputArguments = 24;
+	std::string commandline = "usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction ReliabilityGuidedDIC PropagationFunction OrderingImages Orderingdisplacements xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize directionsToInclude nref DICNeeded CalibrationNeeded CalculateRefractionIndex \n";
 	// Checks number of Arguments
     if ( argc != NumberOfInputArguments)
     {
@@ -100,10 +100,17 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
         return -1;
     }
 	inputvariables.ordering = ordering;
-	unsigned int xStart = atoi(argv[9]);
-	unsigned int xEnd = atoi(argv[10]);
-	unsigned int yStart = atoi(argv[11]);
-	unsigned int yEnd = atoi(argv[12]);
+	unsigned int orderingdisplacements = atoi(argv[9]);
+    if (orderingdisplacements != 0 && orderingdisplacements != 1)
+    {
+        printf("Ordering displacements must be positive (0) or negative (1)\n");
+        return -1;
+    }
+	inputvariables.orderingdisplacements = orderingdisplacements;
+	unsigned int xStart = atoi(argv[10]);
+	unsigned int xEnd = atoi(argv[11]);
+	unsigned int yStart = atoi(argv[12]);
+	unsigned int yEnd = atoi(argv[13]);
 	if (xStart > xEnd)
 	{
 		std::cout << "xStart larger than xEnd" << std::endl;
@@ -137,13 +144,13 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
 		std::cout << "Horizontal Range of Image is too small with this Subset" << std::endl;
 		return -1;
 	}
-	inputvariables.Number_Of_Threads = atoi(argv[13]);
+	inputvariables.Number_Of_Threads = atoi(argv[14]);
 	if (inputvariables.Number_Of_Threads > std::thread::hardware_concurrency())
 	{
 		std::cout << "Specified Number of Threads larger than maximum available on this system. Using the system's maximum" << std::endl;
 		inputvariables.Number_Of_Threads = std::thread::hardware_concurrency();
 	}
-	unsigned int MaxPixelYVertical = atoi(argv[14]);
+	unsigned int MaxPixelYVertical = atoi(argv[15]);
 	if (MaxPixelYVertical > (yEnd-yStart))
 	{
 		std::cout << "Maximum Vertical Pixel Allowed is larger than Vertical Image Size"<< std::endl;
@@ -151,7 +158,7 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
 		//return -1;
 	}
 	inputvariables.MaxPixelYVertical = MaxPixelYVertical;
-	double tolerance = atof(argv[15]);
+	double tolerance = atof(argv[16]);
 	if (tolerance < 0)
 	{
 		std::cout << "Tolerance is negative"<< std::endl;
@@ -166,7 +173,7 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
     inputvariables.abs_tolerance_threshold = tolerance;
     inputvariables.rel_tolerance_threshold = tolerance;
 	// Minimum Acceptable Correlation Coefficient for Initial Guess
-	double minimum_corrcoeff_IG =  atof(argv[16]);
+	double minimum_corrcoeff_IG =  atof(argv[17]);
 	if (minimum_corrcoeff_IG > 1)
 	{
 		std::cout << "Minumum Required Correlation Coefficient is too large" << std::endl;
@@ -185,21 +192,21 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
   inputvariables.horx_ROI = xEnd_ROI - inputvariables.xStart_ROI;
   inputvariables.very_ROI = yEnd_ROI - inputvariables.yStart_ROI;
 
-	int BlurSize = atoi(argv[17]);
+	int BlurSize = atoi(argv[18]);
 	if (BlurSize < 0)
 	{
 			printf("BlurSize must be no (0) or yes (size square filter)\n");
 			return -1;
 	}
 	inputvariables.BlurSize = BlurSize;
-	int directionsToInclude = atoi(argv[18]);
+	int directionsToInclude = atoi(argv[19]);
 	if (directionsToInclude != 1 && directionsToInclude != 2)
 	{
 			printf("directionsToInclude must be X (1) or XYZ (2)\n");
 			return -1;
 	}
 	inputvariables.directionsToInclude = directionsToInclude;
-	double nref = atof(argv[19]);
+	double nref = atof(argv[20]);
 	if (nref < 1 )
 	{
 			printf("Reference Index of Refraction is too small\n");
@@ -212,21 +219,21 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
 	}
 	inputvariables.nref = nref;
 
-	unsigned int DICneeded = atoi(argv[20]);
+	unsigned int DICneeded = atoi(argv[21]);
   if (DICneeded != 0 && DICneeded != 1)
   {
       printf("DICneeded must be no (0) or yes (1)\n");
       return -1;
   }
 	inputvariables.DICNeeded = DICneeded;
-	unsigned int Calibrationneeded = atoi(argv[21]);
+	unsigned int Calibrationneeded = atoi(argv[22]);
     if (Calibrationneeded != 0 && Calibrationneeded != 1)
     {
         printf("CalibrationNeeded must be no (0) or yes (1)\n");
         return -1;
     }
 	inputvariables.CalibrationNeeded = Calibrationneeded;
-	unsigned int Refractionneeded = atoi(argv[22]);
+	unsigned int Refractionneeded = atoi(argv[23]);
     if (Refractionneeded != 0 && Refractionneeded != 1)
     {
         printf("CalculateRefractionIndex must be no (0) or yes (1)\n");

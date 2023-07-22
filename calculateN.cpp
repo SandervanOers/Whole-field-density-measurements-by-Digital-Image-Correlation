@@ -464,7 +464,7 @@ extern std::vector<cv::Mat> CalculateN(const cv::Mat &GridX, const cv::Mat &Grid
 	double max_val_nu = 1e7;
 	unsigned int max_iterations = 1e4;
 
-	std::vector<double> LengthsMiddleTank{experimentalsetupvariables.L_c, experimentalsetupvariables.L_g, experimentalsetupvariables.L_t/2.0, 0};
+	std::vector<double> LengthsMiddleTank{Lengths[0], Lengths[1], Lengths[2]/2, 0};
 
 	cv::Mat n_field(GridX.size(), CV_64FC1, Scalar(0));
 	cv::Mat ksi(GridX.size(), CV_64FC1, Scalar(0));
@@ -530,7 +530,14 @@ extern std::vector<cv::Mat> CalculateN(const cv::Mat &GridX, const cv::Mat &Grid
 						lambda = lambda_new;
 					}
 			}
-			std::vector<cv::Mat> X60 = ForwardModel(GX, GY, meanGridX, meanGridY, dx, dy, focal_length, LengthsMiddleTank, Distance_From_Pixels_To_Meters, PlaneDefinition, n_0, n_1, nref);
+
+
+			cv::Mat DX0(GridX.size(), CV_64FC1, Scalar(0));
+			cv::Mat DY0(GridX.size(), CV_64FC1, Scalar(0));
+			//std::vector<cv::Mat> X61 = ForwardModel(GridX, GridY, meanGridX, meanGridY, DX, DY, focal_length, Lengths, Distance_From_Pixels_To_Meters, PlaneDefinition, n_0, n_1, n);
+			//std::vector<cv::Mat> X60 = ForwardModel(GridX, GridY, meanGridX, meanGridY, DX0, DY0, focal_length, Lengths, Distance_From_Pixels_To_Meters, PlaneDefinition, n_0, n_1, nref);
+
+			std::vector<cv::Mat> X60 = ForwardModel(GX, GY, meanGridX, meanGridY, dx, dy, focal_length, LengthsMiddleTank, Distance_From_Pixels_To_Meters, PlaneDefinition, n_0, n_1, n_around+n);
 			ksi.at<double>(i,j) = X60[0].at<double>(0,0);
 			eta.at<double>(i,j) = X60[1].at<double>(0,0);
 			dzeta.at<double>(i,j) = X60[2].at<double>(0,0);

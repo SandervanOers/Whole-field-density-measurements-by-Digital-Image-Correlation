@@ -10,6 +10,7 @@ struct InputVariables {
 	unsigned int ReliabilityGuidedDIC;
 	unsigned int propagationfunction;
 	unsigned int ordering;
+	unsigned int orderingdisplacements;
 	unsigned int xStart;
 	unsigned int xEnd;
 	unsigned int yStart;
