@@ -4,6 +4,13 @@ static bool sort_by_C_value (const  Points_With_Value &lhs, const Points_With_Va
 {
     return lhs.C_value > rhs.C_value;
 }
+static bool sort_by_verticalposition (const  Points_With_Value &lhs, const Points_With_Value &rhs)
+{
+    if (lhs.Loc.y == rhs.Loc.y)
+      return lhs.Loc.x > rhs.Loc.x;
+    else
+      return lhs.Loc.y > rhs.Loc.y;
+}
 /*--------------------------------------------------------------------------*/
 static void compute_Save_GridX_Y(const cv::Size &Size, const InputVariables &inputvariables);
 /*--------------------------------------------------------------------------*/
@@ -50,33 +57,44 @@ extern void DIC(const cv::Mat &img, const cv::Mat &img1, const InputVariables &i
     cv::Mat nonZeroCoordinates;
     cv::findNonZero(CorrelationCoefficient>0, nonZeroCoordinates);
     for (unsigned int i = 0; i < nonZeroCoordinates.total(); i++ )
-	{
-		Locations_Best_Correlation.push_back(Points_With_Value(CorrelationCoefficient.at<double>(nonZeroCoordinates.at<Point>(i)), nonZeroCoordinates.at<Point>(i)));
+	  {
+		    Locations_Best_Correlation.push_back(Points_With_Value(CorrelationCoefficient.at<double>(nonZeroCoordinates.at<Point>(i)), nonZeroCoordinates.at<Point>(i)));
+        //std::cout << CorrelationCoefficient.at<double>(nonZeroCoordinates.at<Point>(i)) << " " << nonZeroCoordinates.at<Point>(i) << std::endl;
     }
+    //std::cout << "Before sort: " << std::endl;
+    //for (auto i = Locations_Best_Correlation.begin(); i < Locations_Best_Correlation.end(); i++)
+	  // {
+		//     std::cout << (*i).Loc << ": " << (*i).C_value << std::endl;
+	  // }
 
     // Sort first elements
-    sort(Locations_Best_Correlation.begin(), Locations_Best_Correlation.end(), sort_by_C_value);
-    for (auto i = Locations_Best_Correlation.begin(); i < Locations_Best_Correlation.end(); i++)
-	{
-		std::cout << (*i).Loc << ": " << (*i).C_value << std::endl;
-	}
+    if (inputvariables.ReliabilityGuidedDIC == 1)
+      sort(Locations_Best_Correlation.begin(), Locations_Best_Correlation.end(), sort_by_C_value);
+    else
+      sort(Locations_Best_Correlation.begin(), Locations_Best_Correlation.end(), sort_by_verticalposition);
+
+    //std::cout << "After sort: " << std::endl;
+    //for (auto i = Locations_Best_Correlation.begin(); i < Locations_Best_Correlation.end(); i++)
+	//{
+	//	std::cout << (*i).Loc << ": " << (*i).C_value << std::endl;
+//	}
 	std::cout << std::endl << "\033[1;32mList of Points with Values Sorted\033[0m\n" << std::endl;
 	/*--------------------------------------------------------------------------*/
     const bool plotting = 0;
-    /*int ct = 0;
+    int ct = 0;
     std::string name = "CC_";
     std::string type = ".png";
     std::string folderName = "Output/";
     if (plotting)
     {
         std::stringstream ss;
-        ss<<name<<(ct)<<type;
+        ss<<folderName<<name<<(ct)<<type;
         std::string filename = ss.str();
         ss.str("");
         cv::Mat Copy_CCF = CorrelationCoefficient.clone();
         Copy_CCF.convertTo(Copy_CCF, CV_8UC1, 255.0);
         imwrite(filename, Copy_CCF);
-    }*/
+    }
 	/*--------------------------------------------------------------------------*/
 
 	cv::Ptr<cv::Formatter> fmt = cv::Formatter::get(cv::Formatter::FMT_DEFAULT);
@@ -137,7 +155,18 @@ extern void DIC(const cv::Mat &img, const cv::Mat &img1, const InputVariables &i
         }
 		//std::cout << "Before Loc"<< std::endl;
         Locations_Best_Correlation.erase(Locations_Best_Correlation.begin());
-        sort(Locations_Best_Correlation.begin(), Locations_Best_Correlation.end(), sort_by_C_value);
+        if (inputvariables.ReliabilityGuidedDIC == 1)
+          sort(Locations_Best_Correlation.begin(), Locations_Best_Correlation.end(), sort_by_C_value);
+        else
+          sort(Locations_Best_Correlation.begin(), Locations_Best_Correlation.end(), sort_by_verticalposition);
+
+
+        //std::cout << "Iteration" << std::endl;
+      //  for (auto i = Locations_Best_Correlation.begin(); i < Locations_Best_Correlation.end(); i++)
+    	//{
+    	//	std::cout << (*i).Loc << ": " << (*i).C_value << std::endl;
+    	//}
+      //system("read");
 
     //for (auto i = Locations_Best_Correlation.begin(); i < Locations_Best_Correlation.end(); i++)
 	//{
@@ -152,27 +181,25 @@ extern void DIC(const cv::Mat &img, const cv::Mat &img1, const InputVariables &i
         else
         {
             if (plotting)
-            {/*
+            {
                 ct++;
                 std::stringstream ss;
-                ss<<name<<(ct)<<type;
+                ss<<folderName<<name<<(ct)<<type;
                 std::string filename = ss.str();
                 ss.str("");
                 cv::Mat Copy_CCF = CorrelationCoefficient.clone();
                 Copy_CCF.convertTo(Copy_CCF, CV_8UC1, 255.0);
-                imwrite(filename, Copy_CCF);*/
+                imwrite(filename, Copy_CCF);
             }
-            else
+            double computed = cv::sum(Computed_Points).val[0]/static_cast<double>(Computed_Points.total())*100.0;
+            if (computed>outputcount)
             {
-                double computed = cv::sum(Computed_Points).val[0]/static_cast<double>(Computed_Points.total())*100.0;
-                if (computed>outputcount)
-                {
-                    outputcount++;
-                    outputcount++;
-                    outputcount++;
-                    std::cout << "Points Computed: " << std::setprecision(2) << computed << "%" << std::endl;
-                }
+                outputcount++;
+                outputcount++;
+                outputcount++;
+                std::cout << "Points Computed: " << std::setprecision(2) << computed << "%" << std::endl;
             }
+
         }
     }
 	std::cout << std::endl << "\033[1;32mAll Points Computed\033[0m\n" << std::endl;

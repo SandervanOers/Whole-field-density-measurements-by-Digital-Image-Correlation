@@ -14,7 +14,6 @@ static double CalculateCostFunction(const cv::Mat &GridX, const cv::Mat &GridY, 
 /*--------------------------------------------------------------------------*/
 static double computeXq0(const double &a, const double &c, const double &Lm, const double &f, const double &Sp);
 static double computeYq0(const double &b, const double &c, const double &Lm, const double &f, const double &Sp);
-//static void ccdPixeltoMeters(const double &GridX, const double &GridY, const double &Sp, double &XPhysical, double &YPhysical);
 static double calculateLf(const double &focal_length, const double &Lm);
 /*--------------------------------------------------------------------------*/
 static std::vector<cv::Mat> calculateDirectionCosines(const cv::Mat &X, const cv::Mat &Y, const double &L_f);
@@ -304,7 +303,6 @@ static std::vector<cv::Mat> computeNumericalDerivativeForwardModel(const cv::Mat
 	// Lm derivative
 	double L_mplus = L_m + h;
 	double dplus = -c/normPD*L_mplus;
-	//double L_cplus = c/(a+b+c)*L_mplus-L_s-2.0*L_g-L_t;
 	double L_cplus = computeLc(c, normPD, L_mplus, L_s, L_g, L_t);
 	std::vector<double> Lengthsnewplus(Lengths.begin(), Lengths.end());
 	Lengthsnewplus[0] = L_cplus;
@@ -312,7 +310,6 @@ static std::vector<cv::Mat> computeNumericalDerivativeForwardModel(const cv::Mat
 
 	double L_mminus = L_m-h;
 	double dminus = -c/normPD*L_mminus;
-	//double L_cminus = c/(a+b+c)*L_mminus-L_s-2.0*L_g-L_t;
 	double L_cminus = computeLc(c, normPD, L_mminus, L_s, L_g, L_t);
 	std::vector<double> Lengthsnewminus(Lengths.begin(), Lengths.end());
 	Lengthsnewminus[0] = L_cminus;
@@ -435,7 +432,7 @@ static void calculate_HessianJacobian_ForwardModel(const cv::Mat &GridX, const c
 	}
 }
 /*--------------------------------------------------------------------------*/
-extern cv::Mat CalculateN(const cv::Mat &GridX, const cv::Mat &GridY, const double &meanGridX, const double &meanGridY, const cv::Mat &Dx, const cv::Mat &Dy, const double &focal_length, const std::vector<double> &Lengths, const double &Distance_From_Pixels_To_Meters, const std::vector<double> &PlaneDefinition, const double &n_0, const double &n_1, const double &nref, const int &directionsToInclude)
+extern std::vector<cv::Mat> CalculateN(const cv::Mat &GridX, const cv::Mat &GridY, const double &meanGridX, const double &meanGridY, const cv::Mat &Dx, const cv::Mat &Dy, const double &focal_length, const std::vector<double> &Lengths, const double &Distance_From_Pixels_To_Meters, const std::vector<double> &PlaneDefinition, const double &n_0, const double &n_1, const double &nref, const int &directionsToInclude)
 {
 	double n_ini = 1.0;
 	double n_old = 1.0;
@@ -467,7 +464,12 @@ extern cv::Mat CalculateN(const cv::Mat &GridX, const cv::Mat &GridY, const doub
 	double max_val_nu = 1e7;
 	unsigned int max_iterations = 1e4;
 
+	std::vector<double> LengthsMiddleTank{experimentalsetupvariables.L_c, experimentalsetupvariables.L_g, experimentalsetupvariables.L_t/2.0, 0};
+
 	cv::Mat n_field(GridX.size(), CV_64FC1, Scalar(0));
+	cv::Mat ksi(GridX.size(), CV_64FC1, Scalar(0));
+	cv::Mat eta(GridX.size(), CV_64FC1, Scalar(0));
+	cv::Mat dzeta(GridX.size(), CV_64FC1, Scalar(0));
 	double outputcount = 1;
 
 	for( int i = 0; i < GridX.rows; ++i)
@@ -506,7 +508,6 @@ extern cv::Mat CalculateN(const cv::Mat &GridX, const cv::Mat &GridY, const doub
 						rel_tolerance = 1;
 						delta_alpha.at<double>(0) = 0;
 					}
-          //std::cout << n << " " << delta_alpha << std::endl;
 					nnew = n + delta_alpha.at<double>(0);
 					Snew = CalculateCostFunction(GX, GY, meanGridX, meanGridY, dx, dy, W, focal_length, Lengths, Distance_From_Pixels_To_Meters, PlaneDefinition, n_0, n_1, n_around+nnew, nref, directionsToInclude);
 					if ((Snew < Sold ) && nnew >= n_lower_bound && nnew <= n_upper_bound)
@@ -529,21 +530,13 @@ extern cv::Mat CalculateN(const cv::Mat &GridX, const cv::Mat &GridY, const doub
 						lambda = lambda_new;
 					}
 			}
+			std::vector<cv::Mat> X60 = ForwardModel(GX, GY, meanGridX, meanGridY, dx, dy, focal_length, LengthsMiddleTank, Distance_From_Pixels_To_Meters, PlaneDefinition, n_0, n_1, nref);
+			ksi.at<double>(i,j) = X60[0].at<double>(0,0);
+			eta.at<double>(i,j) = X60[1].at<double>(0,0);
+			dzeta.at<double>(i,j) = X60[2].at<double>(0,0);
 			n_field.at<double>(i,j) = n_around+n;
-      //std::cout << n_around+n << std::endl;
-
 			n_ini = n_old;
-      //if (n_field.at<double>(i,j)>1.33 && n_field.at<double>(i,j)<1.39)
-			//{
-      //  n_ini = n;
-      //}
-      //else
-      //{
-      //  n_ini = n_old;
-      //}
-      //std::cout << n << std::endl;
 		}
-    //std::cout << std::endl;
 		double computed = (double)i/GridX.rows*100.0;
 		if (computed>outputcount)
 		{
@@ -557,7 +550,13 @@ extern cv::Mat CalculateN(const cv::Mat &GridX, const cv::Mat &GridY, const doub
   std::cout << "mean n = " << std::setprecision(6) << calculateMean(n_field) << std::endl;
   std::cout << "L2 error = " << norm(n_field-1.337, NORM_L2, noArray()) << std::endl;
   std::cout << "L2 error = " << std::setprecision(10) << std::sqrt(1.0/n_field.rows/n_field.cols) * norm(n_field-1.337, NORM_L2, noArray()) << std::endl;
-	return n_field;
+
+	std::vector<cv::Mat> ReturnMat;
+	ReturnMat.push_back(n_field);
+	ReturnMat.push_back(ksi);
+	ReturnMat.push_back(eta);
+	ReturnMat.push_back(dzeta);
+	return ReturnMat;
 }
 /*--------------------------------------------------------------------------*/
 extern std::vector<double> Calibration(const cv::Mat &GridX, const cv::Mat &GridY, const cv::Mat &Dx, const cv::Mat &Dy, const cv::Mat &CorrelationCoefficient, const double &focal_length, const std::vector<double> &Lengths, const double &Distance_From_Pixels_To_Meters, const double &n_0, const double &n_1, const double &n, const double &nref, const std::string &path, const double &corr_cut_off, const int &directionsToInclude)
@@ -583,10 +582,11 @@ extern std::vector<double> Calibration(const cv::Mat &GridX, const cv::Mat &Grid
 	//////////////////////////////////////////////////////////////////////////////
 	// Initialize vector q = (a, b, c, L_m) to your own values                  //
 	//////////////////////////////////////////////////////////////////////////////
-  double L_m = 1.18;//1.13;//1.0;           // in meters
-  double a = -0.196;//-0.32;         // n = <a,b,c>
-  double b = 0.0;//0.1465;//0.0083;//0.0;
-  double c = -0.952;//-0.947;
+  double L_m = 1.188;          // in meters
+  double a = -0.293;
+  double b = -0.015;
+  double c = -0.955;
+
 
   double normPD = calculateNorm(a, b, c);
   a = a/normPD;
@@ -661,7 +661,7 @@ extern std::vector<double> Calibration(const cv::Mat &GridX, const cv::Mat &Grid
 	std::cout << "Size Jacobian = " << Jacobian.size() << std::endl;
 	std::cout << "Size Hessian = " << Hessian.size() << std::endl;
 
-	while (iterations < max_iterations && nu < max_val_nu && (abs_tolerance > abs_tolerance_threshold || rel_tolerance > rel_tolerance_threshold)) // && data_uniform == 0)
+	while (iterations < max_iterations && nu < max_val_nu && (abs_tolerance > abs_tolerance_threshold || rel_tolerance > rel_tolerance_threshold))
 	{
             iterations++;
             cv::Mat delta_alpha(4,1,CV_64F);
@@ -697,10 +697,8 @@ extern std::vector<double> Calibration(const cv::Mat &GridX, const cv::Mat &Grid
     	L_cnew = computeLc(cnew, normPDnew, L_mnew, L_s, L_g, L_t);
 			Lengthsnew[0] = L_cnew;
       Snew = CalculateCostFunction(GridX, GridY, Xq0new, Yq0new, Dx, Dy, W, focal_length, Lengthsnew, Distance_From_Pixels_To_Meters, PlaneDefinitionnew, n_0, n_1, n, nref, directionsToInclude);
-			//std::cout <<  "L_c suggested = " << L_cnew << ", L_tot = " << L_cnew+2*L_g+L_s+L_t << std::endl;
-			//std::cout << "S new = " << Snew << std::endl;
 		}
-		if ((Snew < Sold ) && L_cnew > 0 && L_mnew > L_cnew + 2*L_g+L_s+L_t)// && cnew < 0)
+		if ((Snew < Sold ) && L_cnew > 0 && L_mnew > L_cnew + 2*L_g+L_s+L_t)
 		{
 			// Improvement
 			Sold = Snew;
@@ -761,7 +759,6 @@ extern std::vector<double> Calibration(const cv::Mat &GridX, const cv::Mat &Grid
 	std::cout << "S old = " << std::setprecision(2) << std::scientific << S_ini << std::endl;
 	std::cout << "a = " << std::setprecision(8) << a << ", b = " << b << ", c = " << c << ", Lm = " << L_m << std::endl;
 	std::cout << "S = " << std::setprecision(2) << std::scientific << Sold << std::endl << std::endl;
-	//std::cout << "L_m = " << std::setprecision(3) << std::scientific << L_m << std::endl;
 	std::cout << "L_c = " << std::setprecision(3)  << L_c << std::endl;
 	std::cout << "L_tot = " << std::setprecision(3) << L_c+2.0*L_g+L_t+L_s << std::endl;
 
@@ -801,7 +798,6 @@ extern void CalibrationFigures(const cv::Mat &GridX, const cv::Mat &GridY, const
 {
   // Check this function before using it
 
-	//double L_c = Lengths[0];
 	double L_g = Lengths[1];
 	double L_t = Lengths[2];
 	double L_s = Lengths[3];
@@ -826,11 +822,11 @@ extern void CalibrationFigures(const cv::Mat &GridX, const cv::Mat &GridY, const
   // Initial Guess
   //  Tueday Side
 	double Lm_ini = 1;
-	double Xp0_ini = 0.0;//300;//-573;//-2500;
-	double Yp0_ini = 0.0;//300;//684;//1500;
-  double a_ini = -10;//0;//-6;//0.5; //-
+	double Xp0_ini = 0.0;
+	double Yp0_ini = 0.0;
+  double a_ini = -10;
   double b_ini = 0;
-  double c_ini = -34;//-10;//-34;//-0.5*sqrt(3);
+  double c_ini = -34;
 
 	Lm = Lm_ini;
 	Xp0 = Xp0_ini;
@@ -909,9 +905,3 @@ extern double computeLc(const double &c, const double &normPD, const double &L_m
 {
   return -c/normPD*L_m-L_s-2.0*L_g-L_t;
 }
-/*--------------------------------------------------------------------------*/
-//void ccdPixeltoMeters(const double &GridX, const double &GridY, const double &Sp, double &XPhysical, double &YPhysical)
-//{
-//  XPhysical = (GridX-0.5)*Sp;
-//}
-/*--------------------------------------------------------------------------*/

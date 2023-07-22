@@ -3,8 +3,8 @@
 /*--------------------------------------------------------------------------*/
 extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvariables)
 {
-	unsigned int NumberOfInputArguments = 22;
-	std::string commandline = "usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize directionsToInclude nref DICNeeded CalibrationNeeded CalculateRefractionIndex \n";
+	unsigned int NumberOfInputArguments = 23;
+	std::string commandline = "usage: DisplayImage.out <Image_Path> SplineDegree SubsetLength GridLength ShapeFunction ReliabilityGuidedDIC PropagationFunction OrderingImages xStart xEnd yStart yEnd NumberOfThreads MaxPixelYVertical Tolerance MinCorrCoeffIG BlurSize directionsToInclude nref DICNeeded CalibrationNeeded CalculateRefractionIndex \n";
 	// Checks number of Arguments
     if ( argc != NumberOfInputArguments)
     {
@@ -79,24 +79,31 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
     {
         printf("Warning: Subset Length smaller than GridLength: you are not using all available data. \n");
     }
-    unsigned int propagationfunction = atoi(argv[6]);
+		unsigned int ReliabilityGuidedDIC = atoi(argv[6]);
+    if (ReliabilityGuidedDIC != 0 && ReliabilityGuidedDIC != 1)
+    {
+        printf("ReliabilityGuidedDIC must be on (1) or off (0)\n");
+        return -1;
+    }
+		inputvariables.ReliabilityGuidedDIC = ReliabilityGuidedDIC;
+		unsigned int propagationfunction = atoi(argv[7]);
     if (propagationfunction != 0 && propagationfunction != 1)
     {
         printf("Propagation Function must be on (1) or off (0)\n");
         return -1;
     }
 	inputvariables.propagationfunction = propagationfunction;
-	unsigned int ordering = atoi(argv[7]);
+	unsigned int ordering = atoi(argv[8]);
     if (ordering != 0 && ordering != 1)
     {
         printf("Ordering must be natural (0) or reverse (1)\n");
         return -1;
     }
 	inputvariables.ordering = ordering;
-	unsigned int xStart = atoi(argv[8]);
-	unsigned int xEnd = atoi(argv[9]);
-	unsigned int yStart = atoi(argv[10]);
-	unsigned int yEnd = atoi(argv[11]);
+	unsigned int xStart = atoi(argv[9]);
+	unsigned int xEnd = atoi(argv[10]);
+	unsigned int yStart = atoi(argv[11]);
+	unsigned int yEnd = atoi(argv[12]);
 	if (xStart > xEnd)
 	{
 		std::cout << "xStart larger than xEnd" << std::endl;
@@ -130,13 +137,13 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
 		std::cout << "Horizontal Range of Image is too small with this Subset" << std::endl;
 		return -1;
 	}
-	inputvariables.Number_Of_Threads = atoi(argv[12]);
+	inputvariables.Number_Of_Threads = atoi(argv[13]);
 	if (inputvariables.Number_Of_Threads > std::thread::hardware_concurrency())
 	{
 		std::cout << "Specified Number of Threads larger than maximum available on this system. Using the system's maximum" << std::endl;
 		inputvariables.Number_Of_Threads = std::thread::hardware_concurrency();
 	}
-	unsigned int MaxPixelYVertical = atoi(argv[13]);
+	unsigned int MaxPixelYVertical = atoi(argv[14]);
 	if (MaxPixelYVertical > (yEnd-yStart))
 	{
 		std::cout << "Maximum Vertical Pixel Allowed is larger than Vertical Image Size"<< std::endl;
@@ -144,7 +151,7 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
 		//return -1;
 	}
 	inputvariables.MaxPixelYVertical = MaxPixelYVertical;
-	double tolerance = atof(argv[14]);
+	double tolerance = atof(argv[15]);
 	if (tolerance < 0)
 	{
 		std::cout << "Tolerance is negative"<< std::endl;
@@ -159,7 +166,7 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
     inputvariables.abs_tolerance_threshold = tolerance;
     inputvariables.rel_tolerance_threshold = tolerance;
 	// Minimum Acceptable Correlation Coefficient for Initial Guess
-	double minimum_corrcoeff_IG =  atof(argv[15]);
+	double minimum_corrcoeff_IG =  atof(argv[16]);
 	if (minimum_corrcoeff_IG > 1)
 	{
 		std::cout << "Minumum Required Correlation Coefficient is too large" << std::endl;
@@ -178,21 +185,21 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
   inputvariables.horx_ROI = xEnd_ROI - inputvariables.xStart_ROI;
   inputvariables.very_ROI = yEnd_ROI - inputvariables.yStart_ROI;
 
-	int BlurSize = atoi(argv[16]);
+	int BlurSize = atoi(argv[17]);
 	if (BlurSize < 0)
 	{
 			printf("BlurSize must be no (0) or yes (size square filter)\n");
 			return -1;
 	}
 	inputvariables.BlurSize = BlurSize;
-	int directionsToInclude = atoi(argv[17]);
+	int directionsToInclude = atoi(argv[18]);
 	if (directionsToInclude != 1 && directionsToInclude != 2)
 	{
 			printf("directionsToInclude must be X (1) or XYZ (2)\n");
 			return -1;
 	}
 	inputvariables.directionsToInclude = directionsToInclude;
-	double nref = atof(argv[18]);
+	double nref = atof(argv[19]);
 	if (nref < 1 )
 	{
 			printf("Reference Index of Refraction is too small\n");
@@ -205,21 +212,21 @@ extern int readinput(unsigned int argc, char *argv[], InputVariables &inputvaria
 	}
 	inputvariables.nref = nref;
 
-	unsigned int DICneeded = atoi(argv[19]);
+	unsigned int DICneeded = atoi(argv[20]);
   if (DICneeded != 0 && DICneeded != 1)
   {
       printf("DICneeded must be no (0) or yes (1)\n");
       return -1;
   }
 	inputvariables.DICNeeded = DICneeded;
-	unsigned int Calibrationneeded = atoi(argv[20]);
+	unsigned int Calibrationneeded = atoi(argv[21]);
     if (Calibrationneeded != 0 && Calibrationneeded != 1)
     {
         printf("CalibrationNeeded must be no (0) or yes (1)\n");
         return -1;
     }
 	inputvariables.CalibrationNeeded = Calibrationneeded;
-	unsigned int Refractionneeded = atoi(argv[21]);
+	unsigned int Refractionneeded = atoi(argv[22]);
     if (Refractionneeded != 0 && Refractionneeded != 1)
     {
         printf("CalculateRefractionIndex must be no (0) or yes (1)\n");

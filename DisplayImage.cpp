@@ -29,33 +29,13 @@ int main(int argc, char** argv )
 	cv::Mat DY = load_matrix(inputvariables.path, "V0", 1);
 	cv::Mat GridX = load_matrix(inputvariables.path, "GridX", 1);
 	cv::Mat GridY = load_matrix(inputvariables.path, "GridY", 1);
-	std::cout << "inputvariables.x_p0 = " << inputvariables.x_p0 << std::endl;
-	std::cout << "inputvariables.y_p0 = " << inputvariables.y_p0 << std::endl;
 	inputvariables.x_p0 = 0.0;
-	inputvariables.y_p0 = 0.0;//1089.0;
-	GridX = GridX - inputvariables.x_p0;
-	GridY = GridY - inputvariables.y_p0;
-	std::cout << "inputvariables.x_p0 = " << inputvariables.x_p0 << std::endl;
-	std::cout << "inputvariables.y_p0 = " << inputvariables.y_p0 << std::endl;
-
-	std::cout << "mean GridX = " << calculateMean(GridX) << std::endl;
-	std::cout << "mean GridY = " << calculateMean(GridY) << std::endl;
+	inputvariables.y_p0 = 0.0;
 	GridX = GridX - calculateMean(GridX);
 	GridY = GridY - calculateMean(GridY);
-	std::cout << "mean GridX = " << calculateMean(GridX) << std::endl;
-	std::cout << "mean GridY = " << calculateMean(GridY) << std::endl;
 
 	cv::Mat CC = load_matrix(inputvariables.path, "CorrelationCoefficient", 1);
 	std::cout << std::endl << "\033[1;32mLoading Matrices Completed\033[0m\n" << std::endl;
-	/*--------------------------------------------------------------------------*/
-	if (inputvariables.ordering==1)
-	{
-		DX = - DX;
-		DY = - DY;
-	}
-	// Region of Compensation Corrections
-	//DX = DX + 0.0;
-	//DY = DY + 0.0;
 	/*--------------------------------------------------------------------------*/
 	auto tr3= std::chrono::high_resolution_clock::now();
 	ExperimentalSetupVariables experimentalsetupvariables;
@@ -63,7 +43,6 @@ int main(int argc, char** argv )
 	// Camera Lyon (sider)
 	experimentalsetupvariables.focal_length = 25.0e-3;
 	experimentalsetupvariables.Distance_From_Pixels_To_Meters = 3.45e-6;
-
 	// Lengths Lyon
 	experimentalsetupvariables.L_c = 1e4;
 	experimentalsetupvariables.L_g = 0.6/100;
@@ -131,10 +110,11 @@ int main(int argc, char** argv )
 		Lengths[2] = experimentalsetupvariables.L_t;
 
 		auto tr5 = std::chrono::high_resolution_clock::now();
-
-		cv::Mat nfield = CalculateN(GridX, GridY, calibrationValues.meanGridX, calibrationValues.meanGridY, DX, DY, experimentalsetupvariables.focal_length, Lengths, experimentalsetupvariables.Distance_From_Pixels_To_Meters, PlaneDefinition, experimentalsetupvariables.n_0, experimentalsetupvariables.n_1, experimentalsetupvariables.n_ref, inputvariables.directionsToInclude);
-		std::cout << inputvariables.path << std::endl;
-		store_matrix(inputvariables.path,"nfield", nfield);
+		std::vector<cv::Mat> nfieldandposition = CalculateN(GridX, GridY, calibrationValues.meanGridX, calibrationValues.meanGridY, DX, DY, experimentalsetupvariables.focal_length, Lengths, experimentalsetupvariables.Distance_From_Pixels_To_Meters, PlaneDefinition, experimentalsetupvariables.n_0, experimentalsetupvariables.n_1, experimentalsetupvariables.n_ref, inputvariables.directionsToInclude);
+		store_matrix(inputvariables.path,"nfield", nfieldandposition[0]);
+		store_matrix(inputvariables.path,"ksi", nfieldandposition[1]);
+		store_matrix(inputvariables.path,"eta", nfieldandposition[2]);
+		store_matrix(inputvariables.path,"zeta", nfieldandposition[3]);
 		auto tr6= std::chrono::high_resolution_clock::now();
 		std::cout << "n Calculation took " << std::chrono::duration_cast<std::chrono::milliseconds>(tr6-tr5).count()
 		<< " milliseconds = " << std::chrono::duration_cast<std::chrono::seconds>(tr6-tr5).count() << " seconds = " << std::chrono::duration_cast<std::chrono::minutes>(tr6-tr5).count() << " minutes"<<std::endl;

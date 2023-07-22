@@ -58,11 +58,11 @@ void calculateInitialGuess_Thread_Iteration(const unsigned int &Number_Of_Thread
 	thread_local std::uniform_int_distribution<unsigned> ux(xl, xr);
   thread_local std::uniform_int_distribution<unsigned> uy(yl, yr);
 	std::random_device rdx{};
-    std::random_device rdy{};
-    std::default_random_engine ex{rdx()};
-    std::default_random_engine ey{rdy()};
-    auto dicex = std::bind(ux, ex);
-    auto dicey = std::bind(uy, ey);
+  std::random_device rdy{};
+  std::default_random_engine ex{rdx()};
+  std::default_random_engine ey{rdy()};
+  auto dicex = std::bind(ux, ex);
+  auto dicey = std::bind(uy, ey);
 
 	std::map<double, Points_With_Location_And_Data> List_Of_Initial_Guesses;
     for (unsigned int k = 0; k < ceil(100/Number_Of_Threads); k++)
@@ -71,7 +71,7 @@ void calculateInitialGuess_Thread_Iteration(const unsigned int &Number_Of_Thread
     // Get random i in range (1,horx_ROI/GridLength) => unsigned int Indexi = offset+SubsetLength/2 + i * GridLength; => X_positions(k) = Indexi;
     // Get random j in range (1,very_ROI/GridLength) => unsigned int Indexj = offset+SubsetLength/2 + j * GridLength; => Y_posiitons(k) = Indexj;
     // Do calculatePixelTranslation for these randomly chosen points
-		unsigned int i = dicex();
+			unsigned int i = dicex();
         unsigned int j = dicey();
         unsigned int Indexi = offset+SubsetLength/2 + i * GridLength;
         unsigned int Indexj = offset+SubsetLength/2 + j * GridLength;
@@ -99,7 +99,7 @@ void calculateInitialGuess_Thread_Iteration(const unsigned int &Number_Of_Thread
 		std::cout << "DX = " << DX << ", DY = " << DY << ", CC = " << CC << std::endl;
 		// TO DO: Need to rewrite nonlineariteration.cpp to use img1.cols and img1.rows instead of img.cols and img.rows since interpol.c needs width and height of image.
 		std::vector<double> point1 = iteration(Reference, fptr_img1, Deformed.rows, Deformed.cols, I, J, InitialCondition, SplineDegree, SubsetLength, GridLength, abs_tolerance_threshold, rel_tolerance_threshold, ShapeFunction, xStart, yStart);
-		std::cout << "DX = " << point1[0] << ", DY = " << point1[1] << ", CC = " << point1[12] << std::endl << std::endl;
+		std::cout << "DX = " << point1[0] << ", DY = " << point1[1] << ", CC = " << point1[12] << std::endl;
 		if (point1.back()>CC && point1.back()>minimum_corrcoeff_IG)
 		{
 			better_solution = 1;
@@ -205,8 +205,19 @@ extern std::vector<cv::Mat> calculateInitialGuess_Iteration(const cv::Mat &Refer
 	{
 		unsigned int xl = static_cast<unsigned int>(1+round(0.1*inputvariables.horx_ROI/inputvariables.GridLength));
 		unsigned int xr = static_cast<unsigned int>(inputvariables.horx_ROI/inputvariables.GridLength-round(0.1*inputvariables.horx_ROI/inputvariables.GridLength));
-		unsigned int yl = static_cast<unsigned int>(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength) + (double)l/inputvariables.Number_Of_Threads * (inputvariables.very_ROI/inputvariables.GridLength-round(0.1*inputvariables.very_ROI/inputvariables.GridLength)-(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength))));
-		unsigned int yr = static_cast<unsigned int>(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength) + (l+1.0)/inputvariables.Number_Of_Threads * (inputvariables.very_ROI/inputvariables.GridLength-round(0.1*inputvariables.very_ROI/inputvariables.GridLength)-(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength)))-1);
+		unsigned int yl = 0;
+		unsigned int yr= 0;
+		if (inputvariables.ReliabilityGuidedDIC == 1)
+		{
+			yl = static_cast<unsigned int>(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength) + (double)l/inputvariables.Number_Of_Threads * (inputvariables.very_ROI/inputvariables.GridLength-round(0.1*inputvariables.very_ROI/inputvariables.GridLength)-(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength))));
+			yr = static_cast<unsigned int>(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength) + (l+1.0)/inputvariables.Number_Of_Threads * (inputvariables.very_ROI/inputvariables.GridLength-round(0.1*inputvariables.very_ROI/inputvariables.GridLength)-(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength)))-1);
+		}
+		else
+		{
+			yl = static_cast<unsigned int>(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength) + (inputvariables.Number_Of_Threads+1.0)/inputvariables.Number_Of_Threads * (inputvariables.very_ROI/inputvariables.GridLength-round(0.1*inputvariables.very_ROI/inputvariables.GridLength)-(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength)))-1);
+			yr = static_cast<unsigned int>(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength) + (inputvariables.Number_Of_Threads+1.0)/inputvariables.Number_Of_Threads * (inputvariables.very_ROI/inputvariables.GridLength-round(0.1*inputvariables.very_ROI/inputvariables.GridLength)-(1+round(0.1*inputvariables.very_ROI/inputvariables.GridLength)))-1);
+		}
+		//std::cout << xl << " " << xr << " " << yl << " " << yr << std::endl;
 		// Possible Error when Number_Of_Threads is large and GridLength is large: yl == yr or even yl>yr.
 		threads.push_back(std::thread(calculateInitialGuess_Thread_Iteration, inputvariables.Number_Of_Threads, Reference, Deformed, fptr_img1, std::ref(DispX), std::ref(DispY), std::ref(Ux), std::ref(Vx), std::ref(Uy), std::ref(Vy), std::ref(Uxy), std::ref(Vxy), std::ref(Uxx), std::ref(Vxx), std::ref(Uyy), std::ref(Vyy), std::ref(CorrelationCoefficient), std::ref(Computed_Points), inputvariables.SplineDegree, inputvariables.SubsetLength, inputvariables.GridLength, inputvariables.offset, xl, xr, yl, yr, inputvariables.MaxPixelYVertical, inputvariables.abs_tolerance_threshold, inputvariables.rel_tolerance_threshold, inputvariables.ShapeFunction, inputvariables.minimum_corrcoeff_IG, inputvariables.xDiff, inputvariables.yDiff ));//inputvariables.xStart, inputvariables.yStart));
 

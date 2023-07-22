@@ -7,6 +7,7 @@ struct InputVariables {
 	unsigned int SubsetLength;
 	unsigned int GridLength;
 	unsigned int ShapeFunction;
+	unsigned int ReliabilityGuidedDIC;
 	unsigned int propagationfunction;
 	unsigned int ordering;
 	unsigned int xStart;
